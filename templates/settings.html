@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Pengaturan | Joki Tugas Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- CSS Responsif Dasar (Sama dengan clients.html) --- */
+        * { box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f7f9; color: #333; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px 0; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; min-height: 100vh; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; }
+        .sidebar-header h2 { font-weight: 700; color: #ecf0f1; margin: 0; font-size: 1.5em; }
+        .sidebar-nav-group { display: flex; flex-direction: column; margin-bottom: auto; }
+        .nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 15px; text-decoration: none; color: #bdc3c7; border-left: 5px solid transparent; transition: background-color 0.3s, color 0.3s, border-left-color 0.3s; font-weight: 500; }
+        .nav-item.active { background-color: #34495e; color: white; border-left-color: #f39c12; }
+        .nav-item:not(.active):hover { background-color: #34495e; color: white; }
+        .nav-item i { width: 20px; text-align: center; }
+        .main-content { flex-grow: 1; padding: 40px; }
+        .header-title { color: #1a237e; font-weight: 700; margin-bottom: 30px; font-size: 2em; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        h2 { color: #3949ab; margin-top: 30px; font-weight: 600; }
+        .setting-option { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .setting-option:hover { background-color: #fafafa; }
+        .menu-toggle { display: none; background: #1a237e; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; position: fixed; top: 20px; left: 20px; z-index: 1000; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: left 0.3s ease-in-out; }
+
+        /* --- MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { position: fixed; z-index: 999; height: 100%; transform: translateX(-100%); width: 250px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { padding: 20px; margin-left: 0; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header"><h2>JOB JOKI PRO</h2></div>
+            <div class="sidebar-nav-group">
+                <a href="{{ url_for('index') }}" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="{{ url_for('financials') }}" class="nav-item"><i class="fas fa-wallet"></i> Finansial</a>
+                <a href="{{ url_for('clients') }}" class="nav-item"><i class="fas fa-users"></i> Klien</a>
+                <a href="{{ url_for('settings') }}" class="nav-item active"><i class="fas fa-cog"></i> Pengaturan</a>
+            </div>
+            <a href="{{ url_for('logout') }}" class="nav-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+
+        <div class="main-content">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <h1 class="header-title"><i class="fas fa-cog"></i> Pengaturan Aplikasi</h1>
+            
+            <div class="card">
+                <h2>Pengaturan Akun & Data</h2>
+                
+                <div class="setting-option">
+                    <span><i class="fas fa-user-lock"></i> Ubah Kata Sandi</span>
+                    <button style="padding: 8px 15px; background-color: #1976d2; color: white; border: none; border-radius: 6px;">Ubah</button>
+                </div>
+                
+                <div class="setting-option">
+                    <span><i class="fas fa-database"></i> Backup/Export Data (.csv)</span>
+                    <button style="padding: 8px 15px; background-color: #388e3c; color: white; border: none; border-radius: 6px;">Export</button>
+                </div>
+
+                <div class="setting-option">
+                    <span><i class="fas fa-trash-alt"></i> Hapus Semua Data Proyek</span>
+                    <button style="padding: 8px 15px; background-color: #d32f2f; color: white; border: none; border-radius: 6px;">Hapus</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

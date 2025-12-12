@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Job Joki Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- Clean Login Form Styling dengan Gradasi --- */
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f3f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        
+        .login-container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); 
+            width: 380px; 
+            text-align: center; 
+            border: 1px solid #e9ecef;
+        }
+        
+        h1 { 
+            color: #212529; 
+            margin-bottom: 25px; 
+            font-weight: 600; 
+            font-size: 1.8em;
+        }
+        
+        input[type="text"], input[type="password"] { 
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ced4da; 
+            border-radius: 6px; box-sizing: border-box; font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #00bcd4; 
+            box-shadow: 0 0 0 0.2rem rgba(0, 188, 212, 0.25);
+            outline: none;
+        }
+        
+        button { 
+            width: 100%; padding: 12px; 
+            background: linear-gradient(45deg, #007bff, #00bcd4); /* Gradasi Keren */
+            color: white; border: none; border-radius: 6px; 
+            cursor: pointer; font-size: 1.1em; font-weight: 600; 
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+        }
+        
+        button:hover { 
+            background: linear-gradient(45deg, #0056b3, #0099aa); 
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        
+        /* Flash Messages */
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 0.9em; font-weight: 500; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        
+        /* Responsive */
+        @media (max-width: 450px) {
+            .login-container { width: 90%; padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1><i class="fas fa-lock"></i> Login Admin</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">MASUK DASHBOARD</button>
+        </form>
+        
+        <p style="margin-top: 25px; font-size: 0.85em; color: #6c757d;">
+            Login Default: <strong>admin / admin123</strong>
+        </p>
+    </div>
+</body>
+</html>

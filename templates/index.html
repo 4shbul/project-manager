@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grid Studio | {{ current_page | capitalize }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- TEMA FLAT MINIMALIS & CLEANEST LOOK --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f7f9fc; color: #333; }
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* --- SIDEBAR: Diperluas (180px) & Premium Dark --- */
+        .sidebar { 
+            width: 180px; /* Lebar Diperluas */
+            background-color: #1e293b; /* Dark Slate Gray Premium */
+            color: white; 
+            padding: 25px 20px 15px 20px; /* Padding Horizontal Ditambah */
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2); 
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
+            transition: width 0.3s ease-in-out; 
+            z-index: 10;
+        }
+        .sidebar-header { 
+            text-align: left; /* Header ke kiri */
+            padding: 0 0 25px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            margin-bottom: 20px; 
+        }
+        .sidebar-header h2 { 
+            font-weight: 700; 
+            color: #f39c12; 
+            margin: 0; 
+            font-size: 1.2em; 
+            writing-mode: unset; /* Normal writing mode */
+            transform: none; 
+        } 
+        
+        /* Navigasi Ikon + Teks */
+        .sidebar-nav-group { display: flex; flex-direction: column; align-items: stretch; /* Memastikan item membentang */ gap: 10px; flex-grow: 1; }
+        .nav-item { 
+            padding: 10px 15px; /* Padding lebih horizontal */
+            width: 100%; /* Membentang penuh */
+            height: auto; 
+            display: flex; justify-content: flex-start; /* Mulai dari kiri */
+            align-items: center; 
+            text-decoration: none; color: #94a3b8; 
+            border-radius: 8px; 
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .nav-item i { margin-right: 12px; font-size: 1.2em; width: 25px; } /* Ikon di kiri */
+        .nav-item span { font-weight: 500; font-size: 0.95em; }
+
+        .nav-item.active { background-color: #f39c12; color: white; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4); } 
+        .nav-item:not(.active):hover { background-color: #374151; color: white; }
+
+        /* Logout Link */
+        .sidebar .logout-item {
+            margin-top: auto; 
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            width: 100%;
+            text-align: center;
+        }
+        .logout-item a {
+            display: flex; /* Diubah ke flex untuk menengahkan ikon */
+            justify-content: center;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+        .logout-item a:hover {
+            color: #f39c12;
+        }
+
+        /* --- LAYOUT UTAMA (1 KOLOM LEBAR) --- */
+        .content-wrapper { 
+            flex-grow: 1; 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            padding: 25px; 
+            gap: 25px; 
+            background-color: #f7f9fc;
+        }
+        
+        /* Header utama di content-wrapper */
+        .header-title {
+            color: #34495e;
+            font-weight: 600;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+        }
+
+        /* --- MEDIA QUERIES KRITIS (Responsifitas) --- */
+        
+        @media (max-width: 1200px) {
+            .content-wrapper { padding: 15px; gap: 15px; } 
+            .metric-card-summary { grid-template-columns: 1fr 1fr; } 
+            .main-grid-content { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .full-width-card-grid { grid-column: 1 / 3; }
+            .top-header-panel { flex-direction: column; align-items: flex-start; }
+            .search-input { width: 100%; margin-bottom: 10px; }
+            
+            .task-form { grid-template-columns: 1fr 1fr; }
+            .task-form button[type="submit"] { grid-column: 1 / 3; }
+            /* Memperkecil layout Setting untuk Tablet */
+            .card form[action$="change_password"] { grid-template-columns: 1fr; }
+            .card form[action$="change_password"] button { grid-column: 1 / 2; }
+            .sidebar { width: 70px; } /* Sidebar menyusut kembali ke ikon */
+            .nav-item i { margin-right: 0; }
+            .nav-item span { display: none; }
+            .sidebar .logout-item a { justify-content: center; }
+
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { 
+                position: fixed; 
+                height: 100%; 
+                left: 0;
+                width: 0; 
+                padding: 0;
+                overflow-x: hidden;
+            }
+            .sidebar.active { 
+                width: 180px; /* Di mobile, tampilkan lebar penuh saat aktif */
+                padding: 25px 20px 15px 20px;
+            }
+            .sidebar.active .nav-item i { margin-right: 12px; }
+            .sidebar.active .nav-item span { display: inline; }
+            .sidebar.active .logout-item a { justify-content: flex-start; padding-left: 20px; }
+
+            .content-wrapper { padding: 10px; }
+            .metric-card-summary { grid-template-columns: 1fr; }
+            .main-grid-content { grid-template-columns: 1fr; }
+            .full-width-card-grid { grid-column: 1 / 2; }
+
+            .task-form { grid-template-columns: 1fr; }
+            .task-form button[type="submit"] { grid-column: 1 / 2; }
+            
+            .menu-toggle { display: block; } 
+            .top-header-panel { margin-top: 50px; } 
+        }
+        
+        /* Tombol Toggle Menu (Hanya di Mobile) */
+        .menu-toggle { display: none; background: #007bff; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 20; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        
+        /* --- KODE DARI SEBELUMNYA (Tombol, Tabel, Layout Grid tetap) --- */
+        /* Anda bisa memasukkan sisa CSS dari kode sebelumnya di sini */
+        
+        /* ... (CSS Sisanya disalin dari balasan sebelumnya) ... */
+        .right-sidebar { display: none; } 
+        .main-content { padding: 0; }
+        .metric-card-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .metric-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .metric-item h4 { font-size: 0.85em; font-weight: 500; color: #6c757d; margin-bottom: 5px; }
+        .metric-item h3 { font-size: 1.5em; font-weight: 600; margin: 0; }
+        .text-primary { color: #007bff; } 
+        .text-success { color: #28a745; }
+        .text-danger { color: #dc3545; }
+        .text-warning { color: #f39c12; } 
+        .net-profit { color: #2c3e50; } 
+        .paid-received { color: #007bff; }
+        .pipeline-revenue { color: #28a745; }
+        .remaining-due { color: #dc3545; }
+        input:not([type="file"]), select { background-color: #fcfcfc; border: 1px solid #dcdcdc; border-radius: 4px; padding: 10px; width: 100%; }
+        input:focus, select:focus { border-color: #007bff; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2); outline: none; }
+        .btn-base { box-shadow: none; border: none; padding: 10px 15px; font-weight: 600; border-radius: 4px; color: white; transition: background-color 0.2s, transform 0.1s, box-shadow 0.1s; cursor: pointer; }
+        .btn-base:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .task-form button { background-color: #007bff; } 
+        .expense-form-container button { background-color: #f39c12; } 
+        .filter-btn { background-color: #e9ecef; color: #495057; border: 1px solid #dee2e6; }
+        .filter-btn.active { background-color: #007bff; color: white; border-color: #007bff; }
+        .action-btn { background-color: #dc3545; color: white; border-radius: 4px; padding: 6px 8px; font-size: 0.9em; border: none; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; }
+        th { background-color: #f7f9fc; color: #34495e; padding: 12px 15px; font-weight: 600; text-align: left; border-bottom: 2px solid #e9ecef; }
+        td { padding: 10px 15px; border-bottom: 1px solid #eeeeee; }
+        tr:hover { background-color: #fcfcfc; }
+        .card-header-accent { border-bottom: 3px solid #007bff; padding-bottom: 10px; margin-bottom: 15px; color: #34495e; font-weight: 600; }
+        .main-grid-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .full-width-card-grid { grid-column: 1 / 4; }
+        .task-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .form-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="sidebar">
+            <div class="sidebar-header"><h2>GRID STUDIO</h2></div> <div class="sidebar-nav-group">
+                <a href="{{ url_for('all_pages', page='dashboard') }}" class="nav-item {% if current_page == 'dashboard' %} active {% endif %}">
+                    <i class="fas fa-chart-line"></i><span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('all_pages', page='financials') }}" class="nav-item {% if current_page == 'financials' %} active {% endif %}">
+                    <i class="fas fa-wallet"></i><span>Finansial</span>
+                </a>
+                <a href="{{ url_for('all_pages', page='clients') }}" class="nav-item {% if current_page == 'clients' %} active {% endif %}">
+                    <i class="fas fa-user-friends"></i><span>Klien</span>
+                </a>
+                <a href="{{ url_for('all_pages', page='settings') }}" class="nav-item {% if current_page == 'settings' %} active {% endif %}">
+                    <i class="fas fa-cog"></i><span>Pengaturan</span>
+                </a>
+            </div>
+            
+            <div class="logout-item">
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            
+            <div class="main-content">
+                
+                <div class="top-header-panel no-hover">
+                    <input type="text" placeholder="Cari proyek, klien, laporan..." class="search-input">
+                    <i class="fas fa-bell settings-icon"></i>
+                </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% if current_page == 'dashboard' %}
+                    
+                    <div class="card full-width-card-grid no-hover" style="background: #e6f7ff; color: #007bff; padding: 20px; border: 1px solid #b3e0ff; margin-bottom: 30px;">
+                        <h2 style="color: #34495e; margin-bottom: 5px; border-bottom: none; padding-bottom: 0;">Halo, {{ user.username | capitalize }}!</h2>
+                        <p style="opacity: 0.8; font-size: 0.9em; margin-bottom: 10px;">Fokus pada prioritas tinggi hari ini! | {{ bot_report.timestamp if bot_report else "Loading Report..." }}</p>
+                        
+                        {% if bot_report %}
+                            <div class="alert alert-{{ bot_report.category }}" style="font-weight: 500; font-size: 0.9em; margin-top: 10px; margin-bottom: 0;">
+                                <i class="fas fa-robot"></i> {{ bot_report.message }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h2 class="card-header-accent">Ringkasan Finansial</h2>
+                    <div class="metric-card-summary">
+                        
+                        <div class="metric-item profit-val">
+                            <h4 class="text-danger">NET PROFIT</h4>
+                            <h3 class="net-profit" id="netProfit">Rp 0</h3>
+                        </div>
+
+                        <div class="metric-item paid-val">
+                            <h4 class="text-success">PAID RECEIVED</h4>
+                            <h3 class="paid-received" id="totalPaid">Rp 0</h3>
+                        </div>
+                        
+                        <div class="metric-item revenue-val">
+                            <h4 class="text-warning">PIPELINE REVENUE</h4>
+                            <h3 class="pipeline-revenue" id="projectedRevenue">Rp 0</h3>
+                        </div>
+                        
+                        <div class="metric-item due-val">
+                            <h4 class="text-danger">REMAINING DUE</h4>
+                            <h3 class="remaining-due" id="remainingDue">Rp 0</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="main-grid-content">
+                        
+                        <div class="card" style="grid-column: 1 / 2;">
+                            <h2 class="card-header-accent"><i class="fas fa-plus-circle"></i> Quick Add Task</h2>
+                            <form id="task-form" action="{{ url_for('add_task') }}" method="post" class="task-form">
+                                <input type="text" name="name" placeholder="Proyek Name" required>
+                                <input type="number" name="progress" placeholder="Progress (%) (0-100)" min="0" max="100" value="0" required>
+                                <select name="priority" required>
+                                    <option value="Medium">Medium Priority</option>
+                                    <option value="High">High Priority</option>
+                                    <option value="Low">Low Priority</option>
+                                </select>
+                                <input type="date" name="completion_date" title="Deadline" required> 
+                                <input type="number" name="price" placeholder="Price (Rp)" required step="0.01">
+                                <input type="number" name="paid" placeholder="Paid (Rp)" required step="0.01">
+                                <button type="submit" class="btn-base" style="background-color: #007bff;"><i class="fas fa-plus"></i> ADD TASK</button>
+                            </form>
+                        </div>
+                        
+                        <div class="card no-hover" style="grid-column: 2 / 3;">
+                            <h2 class="card-header-accent">💵 Quick Expense</h2>
+                            <form id="expense-form-quick" action="{{ url_for('add_expense') }}" method="post" style="display: grid; gap: 10px;">
+                                <input type="text" name="description" placeholder="Description" required>
+                                <input type="number" name="amount" placeholder="Amount (Rp)" required step="0.01">
+                                <input type="date" name="date" required>
+                                <button type="submit" class="btn-base" style="background-color: #f39c12; color: white;"><i class="fas fa-plus-circle"></i> ADD EXPENSE</button>
+                            </form>
+                        </div>
+
+                        <div class="card" style="grid-column: 3 / 4;">
+                            <h2 class="card-header-accent"><i class="fas fa-hourglass-half"></i> Aging Report</h2>
+                            <p style="font-weight: 600; color: #007bff;">Collection Ratio: <span id="collectionRatio">...</span></p>
+                            <hr style="margin: 10px 0;">
+                            <ul style="list-style: none; padding: 0;">
+                                <li>1-30 Days: <span id="aging1_30" class="text-success">Rp 0</span></li>
+                                <li>31-60 Days: <span id="aging31_60" class="text-warning">Rp 0</span></li>
+                                <li>> 60 Days: <span id="aging60_plus" class="text-danger">Rp 0</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card full-width-card-grid" style="padding: 0;">
+                            <h2 class="card-header-accent" style="padding: 15px 25px; margin-bottom: 0;">📜 Daftar Tugas Aktif</h2>
+                            
+                            <div style="padding: 0 15px 15px 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                                <input type="text" id="globalSearch" placeholder="Cari Tugas..." onkeyup="filterTasks()" style="flex-grow: 1; border-radius: 4px; padding: 8px;">
+                                <button class="filter-btn active btn-base" data-filter="all" onclick="setFilter('all')">Semua</button>
+                                <button class="filter-btn btn-base" data-filter="To Do" onclick="setFilter('To Do')">To Do</button>
+                                <button class="filter-btn btn-base" data-filter="Done" onclick="setFilter('Done')">Selesai</button>
+                            </div>
+
+                            <div style="overflow-x: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nama Proyek</th>
+                                            <th>Prioritas</th>
+                                            <th>Progress</th> 
+                                            <th class="currency">Harga</th>
+                                            <th class="currency">Sisa Piutang</th>
+                                            <th>Deadline</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for task in tasks %}
+                                        <tr data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+                                            <td>{{ task.id }}</td>
+                                            <td>{{ task.name }}</td>
+                                            <td><span class="priority-{{ task.priority | lower }}">{{ task.priority }}</span></td>
+                                            
+                                            <td>
+                                                <div class="progress-container">
+                                                    <div class="progress-bar progress-{{ task.status | lower }}" 
+                                                        style="width: {{ task.progress }}%;">
+                                                    </div>
+                                                    <span class="progress-text" style="color: #333;">{{ task.progress }}%</span>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="currency">Rp {{ '{:,.0f}'.format(task.price) }}</td>
+                                            <td class="currency {% if task.price - task.paid > 0 %} text-danger {% endif %}">
+                                                Rp {{ '{:,.0f}'.format(task.price - task.paid) }}
+                                            </td>
+                                            
+                                            <td>{{ task.completion_date if task.completion_date else '-' }}</td>
+                                            <td>
+                                                <button class="action-btn btn-base" title="Hapus" onclick="deleteTask({{ task.id }})"><i class="fas fa-trash-alt"></i></button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                
+                {% elif current_page == 'financials' %}
+                    <h1 class="header-title"><i class="fas fa-chart-area"></i> Laporan Finansial</h1>
+                    
+                    <div class="main-grid-content" style="grid-template-columns: 1fr 1fr;">
+                        <div class="card full-width-card-grid">
+                             <h2 class="card-header-accent"><i class="fas fa-chart-line"></i> Tren Cash Flow</h2>
+                             <canvas id="cashflowChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <h2>Ringkasan Keuangan</h2>
+                            <p>Total Keuntungan Bersih: <strong class="text-primary" id="netProfitFinal">Rp 0</strong></p>
+                            <p>Total Pengeluaran: <strong class="text-danger" id="totalExpensesFinal">Rp 0</strong></p>
+                            <p>Total Pendapatan Diterima: <strong class="text-success" id="totalPaidFinal">Rp 0</strong></p>
+                        </div>
+                        <div class="card expense-form-container no-hover">
+                            <h2>💵 Tambah Pengeluaran Baru</h2>
+                            <form id="expense-form-full" action="{{ url_for('add_expense') }}" method="post">
+                                <input type="text" name="description" placeholder="Deskripsi Biaya" required>
+                                <input type="number" name="amount" placeholder="Jumlah Biaya (Rp)" required step="0.01">
+                                <input type="date" name="date" required>
+                                <button type="submit" class="btn-base" style="background: #2c3e50;"><i class="fas fa-save"></i> Simpan Pengeluaran</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card full-width-card-grid" style="padding: 0;">
+                        <h2 class="card-header-accent" style="padding: 15px 25px; margin-bottom: 0;">📜 Detail Transaksi Pengeluaran</h2>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tanggal</th>
+                                        <th>Deskripsi</th>
+                                        <th class="currency">Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in expenses %}
+                                    <tr>
+                                        <td>{{ expense.id }}</td>
+                                        <td>{{ expense.date }}</td>
+                                        <td>{{ expense.description }}</td>
+                                        <td class="currency"><span class="text-danger">- Rp {{ '{:,.0f}'.format(expense.amount) }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                
+                {% elif current_page == 'clients' %}
+                    <h1 class="header-title"><i class="fas fa-user-tie"></i> Manajemen Klien</h1>
+                    
+                    <div class="card full-width-card-grid no-hover">
+                        <h2 class="card-header-accent">➕ Tambah Klien Baru</h2>
+                        <form action="{{ url_for('add_client') }}" method="post" class="task-form" style="grid-template-columns: 1fr 1fr 1fr auto;">
+                            <input type="text" name="name" placeholder="Nama Klien" required>
+                            <input type="text" name="contact" placeholder="Kontak (WA/Telp)">
+                            <input type="email" name="email" placeholder="Email Klien">
+                            <button type="submit" class="btn-base" style="background: #2c3e50;"><i class="fas fa-user-plus"></i> Tambah Klien</button>
+                        </form>
+                    </div>
+
+                    <h2 class="card-header-accent">📜 Riwayat Klien & Pekerjaan</h2>
+                    {% for client in clients_list %}
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3 style="margin-top: 0; color:#34495e;">{{ client.name }} <small style="font-size: 0.7em; color: #6c757d;">(ID: {{ client.id }})</small></h3>
+                        <p><strong>Total Pendapatan:</strong> <span class="currency text-success">Rp {{ '{:,.0f}'.format(client.total_revenue) }}</span> | 
+                        <strong>Tugas Selesai:</strong> {{ client.jobs_done }}</p>
+                        
+                        <hr style="margin: 15px 0;">
+
+                        <h4>Riwayat Tugas ({{ client.jobs | length }} Tugas)</h4>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nama Tugas</th>
+                                        <th>Status</th>
+                                        <th class="currency">Harga</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in client.jobs %}
+                                    <tr>
+                                        <td>{{ job.name }}</td>
+                                        <td><span class="priority-{{ job.status | lower }}">{{ job.status }}</span></td>
+                                        <td class="currency">Rp {{ '{:,.0f}'.format(job.price) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                {% elif current_page == 'settings' %}
+                    <h1 class="header-title"><i class="fas fa-sliders-h"></i> Pengaturan Aplikasi</h1>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+                        <div style="grid-column: 1 / 2;">
+                            
+                            <div class="card no-hover" style="margin-bottom: 20px;">
+                                <h2 class="card-header-accent"><i class="fas fa-user-shield"></i> Ubah Kata Sandi Admin</h2>
+                                <form action="{{ url_for('change_password') }}" method="post" style="display: grid; grid-template-columns: 1fr; gap: 15px; align-items: center;">
+                                    <input type="password" name="old_password" placeholder="Sandi Lama" required>
+                                    <input type="password" name="new_password" placeholder="Sandi Baru" required>
+                                    <input type="password" name="confirm_password" placeholder="Konfirmasi Sandi Baru" required>
+                                    <button type="submit" class="btn-base btn-setting-save" style="background: #2c3e50;"><i class="fas fa-save"></i> Simpan Perubahan</button>
+                                </form>
+                            </div>
+                            
+                            <div class="card no-hover">
+                                <h2 class="card-header-accent"><i class="fas fa-camera"></i> Kelola Foto Profil</h2>
+                                
+                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                    <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" 
+                                        style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #ccc;"
+                                        onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/default.png') }}';"
+                                        alt="Current Profile Picture">
+                                    <p style="margin: 0;">Foto Saat Ini</p>
+                                </div>
+
+                                <form action="{{ url_for('upload_profile_pic') }}" method="post" enctype="multipart/form-data" style="display: grid; gap: 10px;">
+                                    <input type="file" name="profile_pic" accept=".jpg, .jpeg, .png, .gif" required>
+                                    <button type="submit" class="btn-base btn-setting-upload" style="background: #f39c12; width: 100%;"><i class="fas fa-upload"></i> Unggah & Simpan</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div style="grid-column: 2 / 3;">
+                            <div class="card">
+                                <h2 class="card-header-accent"><i class="fas fa-file-export"></i> Backup & Operasi Data</h2>
+                                
+                                <div class="setting-option" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px;">
+                                    <span>Backup data proyek ke file CSV (.csv) untuk keamanan.</span>
+                                    <a href="{{ url_for('export_data') }}" class="btn-base btn-setting-export" style="background: #28a745; color: white; text-decoration: none;"><i class="fas fa-download"></i> Export Data</a>
+                                </div>
+
+                                <div class="setting-option" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px;">
+                                    <span style="color: #dc3545;">⚠️ Hapus Permanen Semua Data Proyek.</span>
+                                    <button onclick="confirmReset()" class="btn-base btn-setting-delete" style="background-color: #dc3545; color: white;"><i class="fas fa-trash-alt"></i> Hapus Semua</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function confirmReset() {
+                            if (confirm("ANDA YAKIN INGIN MENGHAPUS SEMUA DATA PROYEK? Tindakan ini TIDAK dapat dibatalkan!")) {
+                                if (confirm("KONFIRMASI TERAKHIR: Ini akan menghapus Tugas, Klien, dan Biaya. Klik OK untuk melanjutkan penghapusan.")) {
+                                    fetch('{{ url_for("reset_all_data") }}', { method: 'POST' })
+                                    .then(response => {
+                                        window.location.href = '{{ url_for("all_pages", page="settings") }}';
+                                    });
+                                }
+                            }
+                        }
+                    </script>
+                {% else %}
+                    <h1 class="header-title">Halaman Tidak Ditemukan</h1>
+                {% endif %}
+
+            </div> 
+            
+        </div> 
+    </div> 
+
+    <script>
+        const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+
+        // FUNGSI TOGGLE SIDEBAR
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // --- FILTER & SEARCH LOGIC ---
+        let currentFilter = 'all';
+
+        function filterTasks() {
+            const searchInput = document.getElementById('globalSearch').value.toUpperCase();
+            const table = document.querySelector('.main-content table');
+            if (!table || table.rows.length <= 1) return;
+            
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const row = tr[i];
+                
+                const nameText = row.cells[1].textContent.toUpperCase();
+                const idText = row.cells[0].textContent.toUpperCase();
+                
+                const statusText = row.getAttribute('data-status'); 
+                const priorityText = row.getAttribute('data-priority');
+                
+                let showRow = true;
+
+                if (searchInput.length > 0 && nameText.indexOf(searchInput) === -1 && idText.indexOf(searchInput) === -1) {
+                    showRow = false;
+                }
+
+                if (currentFilter !== 'all') {
+                    if (currentFilter === 'High' || currentFilter === 'Medium' || currentFilter === 'Low') {
+                        if (priorityText !== currentFilter) {
+                            showRow = false;
+                        }
+                    } else {
+                        if (statusText !== currentFilter) {
+                            showRow = false;
+                        }
+                    }
+                }
+
+                row.style.display = showRow ? "" : "none";
+            }
+        }
+
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeBtn = document.querySelector(`.filter-btn[data-filter="${filterType}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+            
+            filterTasks();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ('{{ current_page }}' === 'dashboard') {
+                filterTasks();
+            }
+        });
+
+
+        // --- FETCH FINANCIAL SUMMARY ---
+        function fetchFinancialSummary() {
+            fetch('{{ url_for("get_financial_summary") }}').then(r => r.json()).then(data => { 
+                if (document.getElementById('netProfit')) {
+                    document.getElementById('netProfit').textContent = formatter.format(data.net_profit); 
+                    document.getElementById('totalPaid').textContent = formatter.format(data.total_paid); 
+                    document.getElementById('remainingDue').textContent = formatter.format(data.remaining_due); 
+                }
+                if (document.getElementById('netProfitFinal')) {
+                    document.getElementById('netProfitFinal').textContent = formatter.format(data.net_profit); 
+                    document.getElementById('totalExpensesFinal').textContent = formatter.format(data.total_expenses); 
+                    document.getElementById('totalPaidFinal').textContent = formatter.format(data.total_paid); 
+                }
+            });
+        }
+        
+        function fetchRevenuePipeline() {
+            fetch('{{ url_for("get_revenue_pipeline") }}').then(r => r.json()).then(data => {
+                if (document.getElementById('projectedRevenue')) {
+                    document.getElementById('projectedRevenue').textContent = formatter.format(data.projected_revenue);
+                }
+            });
+        }
+        
+        function fetchClientRetention() {
+            fetch('{{ url_for("get_client_retention") }}').then(r => r.json()).then(data => {
+                if (document.getElementById('retainedClients')) {
+                    document.getElementById('retainedClients').textContent = data.retained_clients_count;
+                }
+            });
+        }
+        
+        function fetchAgingAnalysis() {
+            fetch('{{ url_for("get_aging_analysis") }}').then(r => r.json()).then(data => {
+                const aging = data.aging_summary;
+                const ratio = data.collection_ratio;
+                
+                if(document.getElementById('totalOverdue')) {
+                    document.getElementById('totalOverdue').textContent = formatter.format(aging.total_overdue);
+                    
+                    document.getElementById('aging1_30').innerHTML = `Rp ${aging.aging_1_30.toLocaleString('id-ID')}`;
+                    document.getElementById('aging31_60').innerHTML = `Rp ${aging.aging_31_60.toLocaleString('id-ID')}`;
+                    document.getElementById('aging60_plus').innerHTML = `Rp ${aging.aging_60_plus.toLocaleString('id-ID')}`;
+
+                    const ratioSpan = document.getElementById('collectionRatio');
+                    ratioSpan.textContent = `${ratio}%`;
+                    
+                    let ratioClass = 'ratio-low';
+                    if (ratio >= 85) {
+                        ratioClass = 'ratio-high';
+                    } else if (ratio >= 65) {
+                        ratioClass = 'ratio-medium';
+                    }
+                    ratioSpan.className = 'workload-indicator ' + ratioClass;
+                }
+            });
+        }
+
+
+        // Panggil fetch hanya jika berada di Dashboard atau Financials
+        if ('{{ current_page }}' === 'dashboard' || '{{ current_page }}' === 'financials') {
+            fetchFinancialSummary();
+            if ('{{ current_page }}' === 'dashboard') {
+                fetchRevenuePipeline();
+                fetchClientRetention();
+                fetchAgingAnalysis();
+            }
+        }
+
+        // --- EXPENSE LOGGING (Untuk semua form add_expense) ---
+        const expenseForms = document.querySelectorAll('form[action$="/add_expense"]');
+        expenseForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetch(form.action, { method: form.method, body: new FormData(form) })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Biaya berhasil dicatat! Data diperbarui.');
+                        fetchFinancialSummary(); 
+                        form.reset(); 
+                        if ('{{ current_page }}' === 'financials') {
+                             window.location.reload(); 
+                        }
+                    } else {
+                        alert('Gagal mencatat biaya.');
+                    }
+                });
+            });
+        });
+
+        // --- DEADLINE RISK ANALYSIS (Hanya di Dashboard) ---
+        if ('{{ current_page }}' === 'dashboard') {
+            fetch('{{ url_for("get_deadline_risk") }}').then(r => r.json()).then(data => {
+                // ... (API data fetching)
+            });
+            
+            // CHART JS FUNCTIONS (Hanya di Dashboard)
+            fetch('{{ url_for("get_priority_data") }}').then(r => r.json()).then(data => {
+                new Chart(document.getElementById('priorityChart').getContext('2d'), {type: 'bar', data: {labels: data.labels, datasets: [{label: 'Jumlah Tugas', data: data.data, backgroundColor: ['#F44336', '#FFC107', '#4CAF50'], borderWidth: 1}]}, options: {responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }}});
+            });
+            
+            fetch('{{ url_for("get_monthly_cashflow") }}').then(r => r.json()).then(data => {
+                new Chart(document.getElementById('cashflowChart').getContext('2d'), {type: 'line', data: {labels: data.labels, datasets: [{label: 'Pembayaran Diterima (Rp)', data: data.data, borderColor: '#1976d2', backgroundColor: 'rgba(25, 118, 210, 0.1)', fill: true, tension: 0.4, pointRadius: 5, pointHoverRadius: 7}]}, options: {responsive: true, scales: { y: { beginAtZero: true, ticks: { callback: function(value, index, values) { return 'Rp ' + value.toLocaleString('id-ID'); } } } }}});
+            });
+        }
+
+        // --- DELETION ---
+        function deleteTask(id) {
+            if (confirm('Yakin ingin menghapus tugas ID ' + id + '?')) {
+                const deleteUrl = `/delete_task/${id}`; 
+
+                fetch(deleteUrl, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) { window.location.reload(); } else { alert('Gagal menghapus tugas.'); }
+                }).catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</body>
+</html>
